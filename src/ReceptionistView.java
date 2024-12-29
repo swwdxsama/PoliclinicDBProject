@@ -51,7 +51,11 @@ public class ReceptionistView extends JFrame{
         frame.setSize(400, 600);
         frame.setLayout(new GridBagLayout());
         frame.setVisible(true);
-
+        addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent we) {
+                System.exit(0);
+            }
+        });
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
         gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -109,6 +113,11 @@ public class ReceptionistView extends JFrame{
                     InsertPatient(CNPInput, FirstNameInput, LastNameInput, AddressInput, EmailInput, PhoneInput);
             }
         });
+        addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent we) {
+                System.exit(0);
+            }
+        });
     }
 
 
@@ -163,6 +172,11 @@ public class ReceptionistView extends JFrame{
         frame.add(addPatientButton);
         Button closeButton = new Button("Close");
         closeButton.addActionListener(e -> frame.dispose());
+        addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent we) {
+                System.exit(0);
+            }
+        });
         frame.add(closeButton);
     }
 }
