@@ -10,6 +10,43 @@ public class DoctorView extends JFrame {
     private static String url = "jdbc:mysql://localhost:3306/projectpoliclinic?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
     private static String uid = "root";
     private static String pw = "root";
+
+    private List<String[]> getAppointments(Integer UserID) {
+        List<String[]> appointments = new ArrayList<>();
+        String query = """
+        SELECT AppointmentID, Patient, User, Service, DateTime, Status, Notes
+        FROM appointments
+        WHERE User = ?
+        """;
+
+        try (Connection conn = DriverManager.getConnection(url, uid, pw);
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+            pstmt.setInt(1, UserID); // Set the UserID parameter
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    String[] transRow = new String[]{
+                            String.valueOf(rs.getInt("AppointmentID")),
+                            String.valueOf(rs.getInt("Patient")),
+                            String.valueOf(rs.getInt("User")),
+                            String.valueOf(rs.getInt("Service")),
+                            String.valueOf(rs.getTimestamp("DateTime")),
+                            rs.getString("Status"),
+                            rs.getString("Notes")
+                    };
+                    appointments.add(transRow);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return appointments;
+    }
+
+
+
     public DoctorView(int userID, String password) {
         // Create a new frame for the admin view
         Frame doctorFrame = new Frame("Admin View");

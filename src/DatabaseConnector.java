@@ -378,6 +378,9 @@ public class DatabaseConnector extends Frame {
                 else if (authentified.equals("5")) {
                     ReceptionistView R = new ReceptionistView(ID);
                 }
+                else if (authentified.equals("2")) {
+                    EconomicView E = new EconomicView(ID);
+                }
                 else System.out.println("error authentifying user");
             }
         });

@@ -149,7 +149,7 @@ public class HRView extends JFrame {
         });
     }
 
-    public List<String[]> SearchUserQuery(String CNP, String FirstName, String LastName, String Address, String Email, String Phone, String IBAN, Float Salary, String Department) {
+    public List<String[]> SearchUserQuery(Integer ID, String CNP, String FirstName, String LastName, String Address, String Email, String Phone, String IBAN, Float Salary, String Department) {
         List<String[]> userData = new ArrayList<>();
         String query = """
             SELECT u.UserID, u.CNP, u.FirstName, u.LastName, u.Adress, u.PhoneNumber,
@@ -161,9 +161,13 @@ public class HRView extends JFrame {
                   u.Adress LIKE ? AND u.Email LIKE ? AND u.PhoneNumber LIKE ? AND
                   u.IBAN LIKE ? AND u.department LIKE ?
             """;
-
+        int index = 9;
         if (Salary != null) {
             query += " AND u.Salary = ?";
+            index++;
+        }
+        if (ID != null){
+            query += " AND u.UserID = ?";
         }
 
         try (Connection conn = DriverManager.getConnection(url, uid, pw);
@@ -180,6 +184,9 @@ public class HRView extends JFrame {
 
             if (Salary != null) {
                 pstmt.setFloat(9, Salary);
+            }
+            if (ID != null) {
+                pstmt.setInt(index, ID);
             }
 
             try (ResultSet rs = pstmt.executeQuery()) {
@@ -208,8 +215,8 @@ public class HRView extends JFrame {
         return userData;
     }
 
-    public void FoundUserWindow(String CNP, String FirstName, String LastName, String Address, String Email, String Phone, String IBAN, Float Salary, String Department) {
-        List<String[]> userData = SearchUserQuery(CNP, FirstName, LastName, Address, Email, Phone, IBAN, Salary, Department);
+    public void FoundUserWindow(Integer ID, String CNP, String FirstName, String LastName, String Address, String Email, String Phone, String IBAN, Float Salary, String Department) {
+        List<String[]> userData = SearchUserQuery(ID, CNP, FirstName, LastName, Address, Email, Phone, IBAN, Salary, Department);
         Frame frame = new Frame("Search Results");
         if (userData.isEmpty()) {
             frame.setSize(200, 200);
@@ -218,6 +225,7 @@ public class HRView extends JFrame {
             frame.add(notFoundLabel);
             Button ExitButton = new Button("Exit");
             ExitButton.addActionListener(e -> frame.dispose());
+            frame.add(ExitButton);
         }
         else {
             TextArea textArea = new TextArea();
@@ -279,7 +287,7 @@ public class HRView extends JFrame {
         frame.add(new Label("Input any data you know about user. Leave the fields you don't know empty:"), gbc);
 
         gbc.gridwidth = 1;
-
+        TextField id = new TextField(20);
         TextField cnp = new TextField(20);
         TextField firstName = new TextField(20);
         TextField lastName = new TextField(20);
@@ -291,8 +299,8 @@ public class HRView extends JFrame {
         TextField department = new TextField(20);
 
 
-        TextField[] textFields = {cnp, firstName, lastName, address, email, phone, iban, salary, department};
-        String[] labels = {"Enter CNP:", "First Name:", "Last Name:", "Address:", "Email:", "Phone:", "IBAN:", "Salary:", "Department:"};
+        TextField[] textFields = {id, cnp, firstName, lastName, address, email, phone, iban, salary, department};
+        String[] labels = {"Enter ID:", "Enter CNP:", "First Name:", "Last Name:", "Address:", "Email:", "Phone:", "IBAN:", "Salary:", "Department:"};
 
         for (int i = 0; i < textFields.length; i++) {
             gbc.gridx = 0;
@@ -306,14 +314,14 @@ public class HRView extends JFrame {
 
         Button submitButton = new Button("Submit");
         gbc.gridx = 0;
-        gbc.gridy = 12;
+        gbc.gridy = 13;
         gbc.gridwidth = 2;
         gbc.anchor = GridBagConstraints.CENTER;
         frame.add(submitButton, gbc);
         gbc.gridwidth = 1;
         Button CloseButton = new Button("Close");
         gbc.gridx = 0;
-        gbc.gridy = 13;
+        gbc.gridy = 14;
         gbc.gridwidth = 2;
         gbc.anchor = GridBagConstraints.CENTER;
         frame.add(CloseButton, gbc);
@@ -322,6 +330,14 @@ public class HRView extends JFrame {
         submitButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                    Integer IDInput = null;
+                    if (!id.getText().isEmpty()) {
+                        try {
+                            IDInput = Integer.parseInt(id.getText());
+                        }catch (NumberFormatException e1) {
+                            throw new IllegalArgumentException("Invalid ID input");
+                        }
+                    }
                     String CNPInput = cnp.getText().isEmpty() ? "%" : cnp.getText() + "%";
                     String FirstNameInput = firstName.getText().isEmpty() ? "%" : firstName.getText() + "%";
                     String LastNameInput = lastName.getText().isEmpty() ? "%" : lastName.getText() + "%";
@@ -340,7 +356,7 @@ public class HRView extends JFrame {
                     }
 
                     String DepartmentInput = department.getText().isEmpty() ? "%" : department.getText() + "%";
-                    FoundUserWindow(CNPInput, FirstNameInput, LastNameInput, AddressInput, EmailInput, PhoneInput, IBANInput, Salary, DepartmentInput);
+                    FoundUserWindow(IDInput, CNPInput, FirstNameInput, LastNameInput, AddressInput, EmailInput, PhoneInput, IBANInput, Salary, DepartmentInput);
             }
         });
         addWindowListener(new WindowAdapter() {
