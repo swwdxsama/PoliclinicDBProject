@@ -88,6 +88,11 @@ public class AdminView extends JFrame {
         userDataFrame.setSize(900, 400);
 
         userDataFrame.setVisible(true);
+        addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent we) {
+                System.exit(0);
+            }
+        });
     }
 
 
