@@ -215,6 +215,8 @@ public class HRView extends JFrame {
         return userData;
     }
 
+    //update
+
     public void FoundUserWindow(Integer ID, String CNP, String FirstName, String LastName, String Address, String Email, String Phone, String IBAN, Float Salary, String Department) {
         List<String[]> userData = SearchUserQuery(ID, CNP, FirstName, LastName, Address, Email, Phone, IBAN, Salary, Department);
         Frame frame = new Frame("Search Results");
