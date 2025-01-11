@@ -12,7 +12,7 @@ import java.util.List;
 public class ReceptionistView extends JFrame{
     private static String url = "jdbc:mysql://localhost:3306/projectpoliclinic?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
     private static String uid = "root";
-    private static String pw = "root";
+    private static String pw = "AdelinMihai06*";
 
     public void InsertPatient(String CNP, String FirstName, String LastName, String Address, String Email, String Phone){
         try {
@@ -119,7 +119,7 @@ public class ReceptionistView extends JFrame{
             }
         });
     }
-
+//update
 
     public ReceptionistView(int userID) {
         Frame frame = new Frame("Receptionist");
