@@ -13,7 +13,7 @@ import java.util.List;
 public class DatabaseConnector extends Frame {
     private static String url = "jdbc:mysql://localhost:3306/projectpoliclinic?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
     private static String uid = "root";
-    private static String pw = "AdelinMihai06*";
+    private static String pw = "root";
     private BufferedReader reader;
     private Connection con;
 

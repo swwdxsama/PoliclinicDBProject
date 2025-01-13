@@ -7,7 +7,7 @@ import java.util.List;
 public class ReceptionistView extends Frame {
     private static String url = "jdbc:mysql://localhost:3306/projectpoliclinic?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
     private static String uid = "root";
-    private static String pw = "AdelinMihai06*";
+    private static String pw = "root";
 
     private int userID;
     private Label welcomeLabel;
@@ -35,7 +35,7 @@ public class ReceptionistView extends Frame {
         viewAppointmentsButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                showAppointments();
+                findAppointment();
             }
         });
         add(viewAppointmentsButton);
@@ -122,76 +122,93 @@ public class ReceptionistView extends Frame {
     }
 
     // Method to show appointments for the receptionist
-    private void showAppointments() {
-        // Create a new frame to display appointments
-        Frame appointmentFrame = new Frame("Appointments");
-
-        // Fetch appointments from the database
-        List<String[]> appointments = fetchAppointments();
-
-        // Create a TextArea to display the data
-        TextArea textArea = new TextArea();
-        textArea.setBounds(30, 40, 800, 300);
-        textArea.setEditable(false);
-
-        // Add header for appointments
-        textArea.append(String.format("%-10s %-20s %-20s %-10s %-15s\n", "PatientID", "First Name", "Last Name", "Date", "Doctor"));
-
-        // Add data rows to the TextArea
-        for (String[] appointment : appointments) {
-            textArea.append(String.format("%-10s %-20s %-20s %-10s %-15s\n",
-                    appointment[0], appointment[1], appointment[2], appointment[3], appointment[4]));
-        }
-
-        // Add the TextArea to the frame
-        appointmentFrame.add(textArea);
-
-        // Close button
-        Button closeButton = new Button("Close");
-        closeButton.setBounds(350, 350, 100, 30);
-        closeButton.addActionListener(e -> appointmentFrame.dispose());
-        appointmentFrame.add(closeButton);
-
-        // Set the layout and size
-        appointmentFrame.setLayout(null);
-        appointmentFrame.setSize(900, 400);
-        appointmentFrame.setVisible(true);
-    }
 
     // Method to fetch appointments for the receptionist from the database
-    private List<String[]> fetchAppointments() {
+    private List<String[]> getAppointments(Integer UserID) {
         List<String[]> appointments = new ArrayList<>();
         String query = """
-                SELECT a.PatientID, p.FirstName, p.LastName, a.AppointmentDate, d.FirstName AS DoctorFirstName, d.LastName AS DoctorLastName
+        
+                SELECT a.AppointmentID, a.Patient, a.User, a.Service, a.DateTime, a.Status, a.Notes, p.FirstName, p.LastName
                 FROM appointments a
-                JOIN patients p ON a.PatientID = p.PatientID
-                JOIN medicalstaff m ON a.DoctorID = m.MedicalID
-                JOIN users d ON m.UserID = d.UserID
-                WHERE a.ReceptionistID = ?;
-                """;
+                Join pacients p on a.Patient = p.PacientID
+                WHERE a.User = ?
+        """;
 
         try (Connection conn = DriverManager.getConnection(url, uid, pw);
              PreparedStatement pstmt = conn.prepareStatement(query)) {
 
-            pstmt.setInt(1, userID); // Set the ReceptionistID to the logged-in user's ID
-            ResultSet rs = pstmt.executeQuery();
+            pstmt.setInt(1, UserID); // Set the UserID parameter
 
-            while (rs.next()) {
-                String[] appointment = new String[]{
-                        String.valueOf(rs.getInt("PatientID")),
-                        rs.getString("FirstName"),
-                        rs.getString("LastName"),
-                        rs.getString("AppointmentDate"),
-                        rs.getString("DoctorFirstName") + " " + rs.getString("DoctorLastName")
-                };
-                appointments.add(appointment);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    String[] transRow = new String[]{
+                            String.valueOf(rs.getInt("AppointmentID")),
+                            String.valueOf(rs.getInt("Patient")),
+                            String.valueOf(rs.getInt("User")),
+                            String.valueOf(rs.getInt("Service")),
+                            String.valueOf(rs.getTimestamp("DateTime")),
+                            rs.getString("Status"),
+                            rs.getString("Notes"),
+                            rs.getString("FirstName"),
+                            rs.getString("LastName")
+                    };
+                    appointments.add(transRow);
+                }
             }
-
         } catch (SQLException e) {
             e.printStackTrace();
         }
 
         return appointments;
+    }
+
+    public void AppointmentsFound(int ID) {
+        List<String[]> appointments = getAppointments(ID);
+        Frame frame = new Frame("Search Results");
+        if (appointments.isEmpty()) {
+            frame.setSize(200, 200);
+            frame.setVisible(true);
+            Label notFoundLabel = new Label("You don't have any appointments!");
+            frame.add(notFoundLabel);
+            Button ExitButton = new Button("Exit");
+            ExitButton.addActionListener(e -> frame.dispose());
+            frame.add(ExitButton);
+        }
+        else {
+            TextArea textArea = new TextArea();
+            textArea.setBounds(30, 40, 800, 300);
+            textArea.setEditable(false);
+
+            // Add column names as the header
+            textArea.append(String.format("%-10s %-15s %-15s %-15s %-15s %-15s %-25s %-25s %-25s\n",
+                    "AppointmentID", "Patient", "User", "Service", "Date Time", "Status", "Notes", "First Name", "Last Name"));
+
+            // Add data rows to the TextArea
+            for (String[] row : appointments) {
+                textArea.append(String.format("%-10s %-15s %-15s %-15s %-15s %-15s %-25s %-25s %-25s\n",
+                        row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8]));
+            }
+
+            // Add the TextArea to the frame
+            frame.add(textArea);
+            Button logoutButton = new Button("Close");
+            logoutButton.setBounds(350, 350, 100, 30); // Set position and size
+            logoutButton.addActionListener(e -> {
+                frame.dispose(); // Close the admin window
+                setVisible(true); // Show the login window again
+            });
+            frame.add(logoutButton);
+            // Set the layout and size of the frame
+            frame.setLayout(null);
+            frame.setSize(900, 400);
+
+            frame.setVisible(true);
+            addWindowListener(new WindowAdapter() {
+                public void windowClosing(WindowEvent we) {
+                    System.exit(0);
+                }
+            });
+        }
     }
 
     // Method to add a new patient
@@ -206,6 +223,12 @@ public class ReceptionistView extends Frame {
         TextField lastNameField = new TextField(20);
         Label phoneLabel = new Label("Phone Number:");
         TextField phoneField = new TextField(15);
+        Label cnp = new Label("CNP:");
+        TextField cnpField = new TextField(15);
+        Label adress = new Label("Adress:");
+        TextField adressFiled = new TextField(15);
+        Label email = new Label("Email:");
+        TextField emailField = new TextField(15);
         Button addButton = new Button("Add Patient");
 
         // Add components to the frame
@@ -216,6 +239,12 @@ public class ReceptionistView extends Frame {
         addPatientFrame.add(lastNameField);
         addPatientFrame.add(phoneLabel);
         addPatientFrame.add(phoneField);
+        addPatientFrame.add(cnp);
+        addPatientFrame.add(cnpField);
+        addPatientFrame.add(adress);
+        addPatientFrame.add(adressFiled);
+        addPatientFrame.add(email);
+        addPatientFrame.add(emailField);
         addPatientFrame.add(addButton);
 
         // Action for the add button
@@ -225,7 +254,10 @@ public class ReceptionistView extends Frame {
                 String firstName = firstNameField.getText();
                 String lastName = lastNameField.getText();
                 String phone = phoneField.getText();
-                boolean success = insertPatient(firstName, lastName, phone);
+                String cnp = cnpField.getText();
+                String adress = adressFiled.getText();
+                String email = emailField.getText();
+                boolean success = insertPatient(firstName, lastName, cnp, adress, phone, email);
 
                 if (success) {
                     Label successLabel = new Label("Patient added successfully.");
@@ -244,16 +276,93 @@ public class ReceptionistView extends Frame {
         addPatientFrame.setVisible(true);
     }
 
+
+    private void  findAppointment() {
+        Frame frame = new Frame();
+        addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent we) {
+                System.exit(0);
+            }
+        });
+        frame.setTitle("Find User");
+        frame.setSize(400, 700);
+        frame.setLayout(new GridBagLayout());
+        frame.setVisible(true);
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1.0;
+
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+
+        gbc.gridwidth = 1;
+        TextField id = new TextField(20);
+
+
+        TextField[] textFields = {id};
+        String[] labels = {"Enter doctor's ID:"};
+
+        for (int i = 0; i < textFields.length; i++) {
+            gbc.gridx = 0;
+            gbc.gridy = i + 1;
+            frame.add(new Label(labels[i]), gbc);
+
+            gbc.gridx = 1;
+            frame.add(textFields[i], gbc);
+        }
+        Button submitButton = new Button("Submit");
+        gbc.gridx = 0;
+        gbc.gridy = 13;
+        gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.CENTER;
+        frame.add(submitButton, gbc);
+        gbc.gridwidth = 1;
+        Button CloseButton = new Button("Close");
+        gbc.gridx = 0;
+        gbc.gridy = 14;
+        gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.CENTER;
+        frame.add(CloseButton, gbc);
+        CloseButton.addActionListener(e -> frame.dispose());
+
+        submitButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Integer IDInput = null;
+                if (!id.getText().isEmpty()) {
+                    try {
+                        IDInput = Integer.parseInt(id.getText());
+                    }catch (NumberFormatException e1) {
+                        throw new IllegalArgumentException("Invalid ID input");
+                    }
+                }
+
+                AppointmentsFound(IDInput);
+            }
+        });
+        addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent we) {
+                System.exit(0);
+            }
+        });
+    }
+
+
     // Method to insert a new patient into the database
-    private boolean insertPatient(String firstName, String lastName, String phone) {
-        String query = "INSERT INTO patients (FirstName, LastName, PhoneNumber) VALUES (?, ?, ?)";
+    private boolean insertPatient(String firstName, String lastName, String CNP, String Adress, String phone, String email) {
+        String query = "INSERT INTO pacients (FirstName, LastName, CNP, Adress, PhoneNumber, email) VALUES (?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DriverManager.getConnection(url, uid, pw);
              PreparedStatement pstmt = conn.prepareStatement(query)) {
 
             pstmt.setString(1, firstName);
             pstmt.setString(2, lastName);
-            pstmt.setString(3, phone);
+            pstmt.setString(3, CNP);
+            pstmt.setString(4, Adress);
+            pstmt.setString(5, phone);
+            pstmt.setString(6, email);
             int rowsAffected = pstmt.executeUpdate();
 
             return rowsAffected > 0; // Return true if at least one row was inserted
