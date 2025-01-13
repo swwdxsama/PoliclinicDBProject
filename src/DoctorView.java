@@ -68,7 +68,7 @@ public class DoctorView extends JFrame {
 
             // Check if the insert was successful
             if (rowsInserted > 0) {
-                System.out.println("Appointment modified succesfully");
+                System.out.println("Note added successfully");
             }
 
             // Close the connection
@@ -76,6 +76,108 @@ public class DoctorView extends JFrame {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public void addDiagnostic(String note, int appointmentID){
+        String query = "update consultation " +
+                "set diagnostic = ? " +
+                "where Appointment = ?;";
+        try {
+            // Connect to the database
+            Connection connection = DriverManager.getConnection(url, uid, pw);
+            PreparedStatement statement = connection.prepareStatement(query);
+
+            // Set the values in the query
+            statement.setString(1, note);
+            statement.setString(2, String.valueOf(appointmentID));
+            // Execute the query
+            int rowsInserted = statement.executeUpdate();
+
+            // Check if the insert was successful
+            if (rowsInserted > 0) {
+                System.out.println("Diagnose added successfully");
+            }
+
+            // Close the connection
+            connection.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void addDiagnosisWindow(int userID){
+        Frame frame = new Frame();
+        frame.setTitle("Add diagnosis");
+        frame.setSize(500, 300);
+        frame.setLayout(new GridBagLayout());
+        frame.setVisible(true);
+        addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent we) {
+                System.exit(0);
+            }
+        });
+        GridBagConstraints gbc = new GridBagConstraints();
+        frame.add(new Label("Enter the appointment ID and a diagnosis:"), gbc);
+
+        gbc.gridwidth = 1;
+
+        TextField AppointmentID = new TextField(20);
+        TextField Note = new TextField(20);
+
+
+        TextField[] textFields = {AppointmentID, Note};
+        String[] labels = {"Enter Appointment ID:", "Diagnosis:"};
+
+        for (int i = 0; i < textFields.length; i++) {
+            gbc.gridx = 0;
+            gbc.gridy = i + 1;
+            frame.add(new Label(labels[i]), gbc);
+
+            gbc.gridx = 1;
+            frame.add(textFields[i], gbc);
+        }
+
+
+
+        Button submitButton = new Button("Submit");
+        gbc.gridx = 0;
+        gbc.gridy = 11;
+        gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.CENTER;
+        frame.add(submitButton, gbc);
+        gbc.gridwidth = 1;
+        Button closeButton = new Button("Close");
+        gbc.gridx = 0;
+        gbc.gridy = 12;
+        gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.CENTER;
+        closeButton.addActionListener(e -> frame.dispose());
+        frame.add(closeButton, gbc);
+
+        submitButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+                String AppointmentIDInput = AppointmentID.getText();
+                String NoteInput = Note.getText();
+                try {
+                    addDiagnostic(NoteInput, Integer.parseInt(AppointmentIDInput));
+                }catch (Exception NumberFormatException) {
+                    System.out.println("invalid ID input");
+                }
+            }
+        });
+        frame.addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent we) {
+                frame.dispose(); // Close the admin window
+                setVisible(true); // Show the login window again
+            }
+        });
+
+    }
+
+    public void  addConcediuWindow(){
+
     }
 
     public void modifyAppointmentWindow(int userID){
@@ -178,6 +280,80 @@ public class DoctorView extends JFrame {
         }
         }
 
+
+    public void addConsultationWindow(int userID){
+        Frame frame = new Frame();
+        frame.setTitle("Add Consultation");
+        frame.setSize(400, 600);
+        frame.setLayout(new GridBagLayout());
+        frame.setVisible(true);
+        addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent we) {
+                System.exit(0);
+            }
+        });
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1.0;
+
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.gridwidth = 2;
+        frame.add(new Label("Input data for a consultation:"), gbc);
+
+        gbc.gridwidth = 1;
+
+        TextField PatientID = new TextField(20);
+        TextField AppointmentID = new TextField(20);
+        TextField Diagnostic = new TextField(20);
+        TextField DateTime = new TextField(20);
+        //TextField Notes = new TextField(20);
+
+
+
+        TextField[] textFields = {PatientID, AppointmentID, Diagnostic, DateTime};
+        String[] labels = {"Enter PatientID:", "AppointmentID:", "Diagnosis:", "Date and time:"};
+
+        for (int i = 0; i < textFields.length; i++) {
+            gbc.gridx = 0;
+            gbc.gridy = i + 1;
+            frame.add(new Label(labels[i]), gbc);
+
+            gbc.gridx = 1;
+            frame.add(textFields[i], gbc);
+        }
+
+
+
+        Button submitButton = new Button("Submit");
+        gbc.gridx = 0;
+        gbc.gridy = 11;
+        gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.CENTER;
+        frame.add(submitButton, gbc);
+        gbc.gridwidth = 1;
+
+        submitButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+                String PacientIDInput = PatientID.getText();
+                String ServiceInput = AppointmentID.getText();
+                String DateTimeInput = DateTime.getText();
+                String StatusInput = Diagnostic.getText();
+                //String NotesInput = Notes.getText();
+
+                //InsertPatient(CNPInput, FirstNameInput, LastNameInput, AddressInput, EmailInput, PhoneInput);
+            }
+        });
+        addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent we) {
+                System.exit(0);
+            }
+        });
+    }
+
     public void addAppointmentWindow(int userID){
         Frame frame = new Frame();
         frame.setTitle("Add Appointment");
@@ -241,6 +417,7 @@ public class DoctorView extends JFrame {
                 String StatusInput = Status.getText();
                 String NotesInput = Notes.getText();
 
+                addAppointmentQuery(userID, PacientIDInput, ServiceInput, DateTimeInput, StatusInput, NotesInput);
                 //InsertPatient(CNPInput, FirstNameInput, LastNameInput, AddressInput, EmailInput, PhoneInput);
             }
         });
@@ -365,6 +542,9 @@ public class DoctorView extends JFrame {
         AddNote.addActionListener(e -> modifyAppointmentWindow(userID));
         doctorFrame.add(AddNote);
 
+        Button AddDiagnosis = new Button("Add Diagnosis");
+        AddDiagnosis.addActionListener(e -> addDiagnosisWindow(userID));
+        doctorFrame.add(AddDiagnosis);
         // Add a logout button
         Button logoutButton = new Button("Logout");
         logoutButton.addActionListener(e -> {
