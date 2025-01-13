@@ -368,6 +368,8 @@ public class HRView extends JFrame {
         });
     }
 
+
+
     public HRView(int userID) {
         Frame HRFrame = new Frame();
         HRFrame.setTitle("HR View");
@@ -421,6 +423,7 @@ public class HRView extends JFrame {
         Button ModifyUserButton = new Button("Find User");
         ModifyUserButton.addActionListener(e -> FindUserWindow());
         Button DeleteUserButton = new Button("Delete User");
+
         Button LogOutButton = new Button("Log Out");
         LogOutButton.addActionListener(e -> {
             HRFrame.dispose(); // Close the admin window
