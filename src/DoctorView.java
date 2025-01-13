@@ -333,7 +333,9 @@ public class DoctorView extends JFrame {
         gbc.anchor = GridBagConstraints.CENTER;
         frame.add(submitButton, gbc);
         gbc.gridwidth = 1;
-
+        Button closeButton = new Button("Close");
+        closeButton.addActionListener(e -> frame.dispose());
+        frame.add(closeButton, gbc);
         submitButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -397,7 +399,9 @@ public class DoctorView extends JFrame {
             frame.add(textFields[i], gbc);
         }
 
-
+        Button closeButton = new Button("Close");
+        closeButton.addActionListener(e -> frame.dispose());
+        frame.add(closeButton, gbc);
 
         Button submitButton = new Button("Submit");
         gbc.gridx = 0;
@@ -537,6 +541,13 @@ public class DoctorView extends JFrame {
         Button showAppointmentsButton = new Button("Show Appointments");
         showAppointmentsButton.addActionListener(e -> AppointmentsFound(userID));
         doctorFrame.add(showAppointmentsButton);
+
+        Button addAppointmentButton = new Button("Add Appointment");
+        addAppointmentButton.addActionListener(e -> addAppointmentWindow(userID));
+        doctorFrame.add(addAppointmentButton);
+        Button addConsultationButton = new Button("Add Consultation");
+        addConsultationButton.addActionListener(e -> addConsultationWindow(userID));
+        doctorFrame.add(addConsultationButton);
 
         Button AddNote = new Button("Add Note to an appointment");
         AddNote.addActionListener(e -> modifyAppointmentWindow(userID));

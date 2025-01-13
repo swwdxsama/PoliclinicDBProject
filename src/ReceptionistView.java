@@ -68,7 +68,7 @@ public class ReceptionistView extends Frame {
                 addAppointment();
             }
         });
-        add(addAppointmentButton);
+        //add(addAppointmentButton);
 
         Button viewPoliclinicsButton = new Button("View policlinics");
         viewPoliclinicsButton.addActionListener(e -> showPoliclinics());

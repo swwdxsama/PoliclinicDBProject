@@ -14,6 +14,122 @@ public class HRView extends JFrame {
     private static String uid = "root";
     private static String pw = "root";
 
+
+    public void addMedicalStaff(int userid, String specialization, String degree, String parafcode, String scientifictitle, String teachingpost) {
+        try {
+            // Connect to the database
+            Connection connection = DriverManager.getConnection(url, uid, pw);
+
+            // Prepare the SQL query with placeholders
+            String query = "insert into medicalstaff (UserID, specialization, degree, parafcode, scientifictitle, teachingpost) values(?, ?, ?, ?, ?, ?);";
+            PreparedStatement statement = connection.prepareStatement(query);
+
+            // Set the values in the query
+            statement.setString(1, String.valueOf(userid));
+            statement.setString(2, specialization);
+            statement.setString(3, degree);
+            statement.setString(4, parafcode);
+            statement.setString(5, scientifictitle);
+            statement.setString(6, teachingpost);
+            // Execute the query
+            int rowsInserted = statement.executeUpdate();
+
+            // Check if the insert was successful
+            if (rowsInserted > 0) {
+                System.out.println("User data inserted successfully!");
+            }
+
+            // Close the connection
+            connection.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    /*
+    public void addDoctorWindow() {
+        Frame frame = new Frame();
+        frame.setTitle("Add Doctor");
+        frame.setSize(400, 600);
+        frame.setLayout(new GridBagLayout());
+        frame.setVisible(true);
+        addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent we) {
+                System.exit(0);
+            }
+        });
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1.0;
+
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.gridwidth = 2;
+        frame.add(new Label("Input data for new doctor(Leave the values that are null empty):"), gbc);
+
+        gbc.gridwidth = 1;
+
+        TextField cnp = new TextField(20);
+        TextField firstName = new TextField(20);
+        TextField lastName = new TextField(20);
+        TextField password = new TextField(20);
+        TextField address = new TextField(20);
+        TextField email = new TextField(20);
+
+
+        TextField[] textFields = {cnp, firstName, lastName, password, address, email};
+        String[] labels = {"Enter userID:", "Specialization:", "Degree:", "ParafCode:", "Scientific Title:", "Teaching Post:"};
+
+        for (int i = 0; i < textFields.length; i++) {
+            gbc.gridx = 0;
+            gbc.gridy = i + 1;
+            frame.add(new Label(labels[i]), gbc);
+
+            gbc.gridx = 1;
+            frame.add(textFields[i], gbc);
+        }
+
+
+        Button submitButton = new Button("Submit");
+        gbc.gridx = 0;
+        gbc.gridy = 12;
+        gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.CENTER;
+        frame.add(submitButton, gbc);
+        gbc.gridwidth = 1;
+
+        submitButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    String CNPInput = cnp.getText();
+                    String FirstNameInput = firstName.getText();
+                    String LastNameInput = lastName.getText();
+                    String PasswordInput = password.getText();
+                    String AddressInput = address.getText();
+                    String EmailInput = email.getText();
+                    String PhoneInput = phone.getText();
+                    String IBANInput = iban.getText();
+                    float Salary = Float.parseFloat(salary.getText());
+                    String DepartmentInput = department.getText();
+                    int RoleInput = role.getSelectedIndex() + 1;
+
+                    // Call your inputUser method here
+                    inputUser(CNPInput, FirstNameInput, LastNameInput, PasswordInput, AddressInput, EmailInput, PhoneInput, IBANInput, Salary, DepartmentInput, RoleInput);
+
+                } catch (NumberFormatException ex) {
+                    System.err.println("Invalid salary input!");
+                    Dialog d = new Dialog(frame, "Error", true);
+                    d.add(new Label("Please enter a valid number for salary."));
+                    d.pack();
+                    d.setVisible(true);
+                }
+            }
+        });
+    }
+
+    */
+
     public void inputUser(String cnp, String firstName, String lastName, String password, String address, String email, String phone, String iban, float salary, String department, int role) {
         try {
             // Connect to the database
