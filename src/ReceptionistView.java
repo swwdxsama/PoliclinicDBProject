@@ -70,6 +70,9 @@ public class ReceptionistView extends Frame {
         });
         add(addAppointmentButton);
 
+        Button viewPoliclinicsButton = new Button("View policlinics");
+        viewPoliclinicsButton.addActionListener(e -> showPoliclinics());
+        add(viewPoliclinicsButton);
         // Button to view salary
         viewSalaryButton = new Button("View Salary");
         viewSalaryButton.addActionListener(new ActionListener() {
@@ -548,9 +551,9 @@ public class ReceptionistView extends Frame {
     private List<String[]> fetchEmployeeSalaries() {
         List<String[]> salaries = new ArrayList<>();
         String query = """
-                SELECT e.EmployeeID, u.FirstName, u.LastName, e.Salary
-                FROM employees e
-                JOIN users u ON e.UserID = u.UserID;
+                SELECT  u.UserID, u.FirstName, u.LastName, u.Salary
+                                FROM users u
+
                 """;
 
         try (Connection conn = DriverManager.getConnection(url, uid, pw);
@@ -560,7 +563,7 @@ public class ReceptionistView extends Frame {
 
             while (rs.next()) {
                 String[] salary = new String[]{
-                        String.valueOf(rs.getInt("EmployeeID")),
+                        String.valueOf(rs.getInt("UserID")),
                         rs.getString("FirstName"),
                         rs.getString("LastName"),
                         String.valueOf(rs.getDouble("Salary"))
@@ -676,6 +679,84 @@ public class ReceptionistView extends Frame {
         viewEmployeeFrame.setSize(900, 400);
         viewEmployeeFrame.setVisible(true);
     }
+
+    private List<String[]> fetchPoliclinics(){
+        List<String[]> policlinic = new ArrayList<>();
+        String query = """
+                SELECT p.ClinicID, p.Name, p.Adress, s.Monday, s.Tuesday, s.Wednesday, s.Thursday, s.Friday, s.Saturday, s.Sunday
+                from policlinics p
+                join schedules s on p.Schedule = s.ScheduleID
+                """;
+
+        try (Connection conn = DriverManager.getConnection(url, uid, pw);
+             PreparedStatement pstmt = conn.prepareStatement(query);
+             ResultSet rs = pstmt.executeQuery()) {
+
+            while (rs.next()) {
+                String[] userRow = new String[]{
+                        String.valueOf(rs.getInt("ClinicID")),
+                        rs.getString("Name"),
+                        rs.getString("Adress"),
+                        rs.getString("Monday"),
+                        rs.getString("Tuesday"),
+                        rs.getString("Wednesday"),
+                        rs.getString("Thursday"),
+                        rs.getString("Friday"),
+                        rs.getString("Saturday"),
+                        rs.getString("Sunday")
+                };
+                policlinic.add(userRow);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return policlinic;
+    }
+
+    public void showPoliclinics() {
+        // Create a new frame (window)
+        Frame userDataFrame = new Frame("Policlinics");
+
+        // Fetch user data
+        List<String[]> policlinics = fetchPoliclinics();
+
+        // Create a TextArea to display the data in a table-like format
+        TextArea textArea = new TextArea();
+        textArea.setBounds(30, 40, 800, 300);
+        textArea.setEditable(false);
+
+        // Add column names as the header
+        textArea.append(String.format("%-10s %-30s %-30s %-15s %-15s %-15s %-15s %-15s %-15s %-15s\n",
+                "ID", "Name", "Adress", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"));
+
+        // Add data rows to the TextArea
+        for (String[] row : policlinics) {
+            textArea.append(String.format("%-10s %-30s %-30s %-15s %-15s %-15s %-15s %-15s %-15s %-15s\n",
+                    row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8], row[9]));
+        }
+
+        // Add the TextArea to the frame
+        userDataFrame.add(textArea);
+        Button logoutButton = new Button("Close");
+        logoutButton.setBounds(350, 350, 100, 30); // Set position and size
+        logoutButton.addActionListener(e -> {
+            userDataFrame.dispose(); // Close the admin window
+            setVisible(true); // Show the login window again
+        });
+        userDataFrame.add(logoutButton);
+        // Set the layout and size of the frame
+        userDataFrame.setLayout(null);
+        userDataFrame.setSize(900, 400);
+
+        userDataFrame.setVisible(true);
+        addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent we) {
+                System.exit(0);
+            }
+        });
+    }
+
 
     // Method to fetch employee details from the database
     private List<String[]> fetchEmployeeDetails() {
