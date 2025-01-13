@@ -81,7 +81,7 @@ public class DoctorView extends JFrame {
     public void addDiagnostic(String note, int appointmentID){
         String query = "update consultation " +
                 "set diagnostic = ? " +
-                "where Appointment = ?;";
+                "where ConsultationID = ?;";
         try {
             // Connect to the database
             Connection connection = DriverManager.getConnection(url, uid, pw);
@@ -117,7 +117,7 @@ public class DoctorView extends JFrame {
             }
         });
         GridBagConstraints gbc = new GridBagConstraints();
-        frame.add(new Label("Enter the appointment ID and a diagnosis:"), gbc);
+        frame.add(new Label("Enter the consultation ID and a diagnosis:"), gbc);
 
         gbc.gridwidth = 1;
 
@@ -126,7 +126,7 @@ public class DoctorView extends JFrame {
 
 
         TextField[] textFields = {AppointmentID, Note};
-        String[] labels = {"Enter Appointment ID:", "Diagnosis:"};
+        String[] labels = {"Enter consultation ID:", "Diagnosis:"};
 
         for (int i = 0; i < textFields.length; i++) {
             gbc.gridx = 0;
@@ -280,6 +280,117 @@ public class DoctorView extends JFrame {
         }
         }
 
+    private List<String[]> getConsultations(Integer UserID) {
+        List<String[]> appointments = new ArrayList<>();
+        String query = """
+        
+                SELECT c.ConsultationID, c.ConsultationDate, c.Diagnostic, p.FirstName, p.LastName
+                FROM consultation c
+                Join pacients p on c.Patient = p.PacientID
+                WHERE c.medic = ?
+        """;
+
+        try (Connection conn = DriverManager.getConnection(url, uid, pw);
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+            pstmt.setInt(1, UserID); // Set the UserID parameter
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    String[] transRow = new String[]{
+                            String.valueOf(rs.getInt("ConsultationID")),
+                            String.valueOf(rs.getTimestamp("ConsultationDate")),
+                            String.valueOf(rs.getString("Diagnostic")),
+                            String.valueOf(rs.getString("FirstName")),
+                            String.valueOf(rs.getString("LastName")),
+                    };
+                    appointments.add(transRow);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return appointments;
+    }
+
+    public void ConsultationsFound(int ID) {
+        List<String[]> appointments = getConsultations(ID);
+        Frame frame = new Frame("Search Results");
+        if (appointments.isEmpty()) {
+            frame.setSize(200, 200);
+            frame.setVisible(true);
+            Label notFoundLabel = new Label("You don't have any consultations!");
+            frame.add(notFoundLabel);
+            Button ExitButton = new Button("Exit");
+            ExitButton.addActionListener(e -> frame.dispose());
+            frame.add(ExitButton);
+        }
+        else {
+            TextArea textArea = new TextArea();
+            textArea.setBounds(30, 40, 800, 300);
+            textArea.setEditable(false);
+
+            // Add column names as the header
+            textArea.append(String.format("%-10s %-20s %-50s %-30s %-30s\n",
+                    "ConsultationID", "Consultation Date", "Diagnostic", "First Name", "Last Name"));
+
+            // Add data rows to the TextArea
+            for (String[] row : appointments) {
+                textArea.append(String.format("%-10s %-20s %-50s %-30s %-30s\n",
+                        row[0], row[1], row[2], row[3], row[4]));
+            }
+
+            // Add the TextArea to the frame
+            frame.add(textArea);
+            Button logoutButton = new Button("Close");
+            logoutButton.setBounds(350, 350, 100, 30); // Set position and size
+            logoutButton.addActionListener(e -> {
+                frame.dispose(); // Close the admin window
+                setVisible(true); // Show the login window again
+            });
+            frame.add(logoutButton);
+            // Set the layout and size of the frame
+            frame.setLayout(null);
+            frame.setSize(900, 400);
+
+            frame.setVisible(true);
+            addWindowListener(new WindowAdapter() {
+                public void windowClosing(WindowEvent we) {
+                    System.exit(0);
+                }
+            });
+        }
+    }
+
+
+    public void addConsultation(int PatientID, int DoctorID, String Diagnosis, String DateTime, int appointmentID) {
+        String query = "insert into consultation (ConsultationDate, Diagnostic, Medic, Appointment, Patient) values (?, ?, ?, ?, ?) ";
+        try {
+            // Connect to the databases
+            Connection connection = DriverManager.getConnection(url, uid, pw);
+            PreparedStatement statement = connection.prepareStatement(query);
+
+            // Set the values in the query
+            statement.setString(1, DateTime);
+            statement.setString(2, Diagnosis);
+            statement.setString(3, String.valueOf(DoctorID));
+            statement.setString(4, String.valueOf(appointmentID));
+            statement.setString(5, String.valueOf(PatientID));
+            // Execute the query
+            int rowsInserted = statement.executeUpdate();
+
+            // Check if the insert was successful
+            if (rowsInserted > 0) {
+                System.out.println("ConsultaTion added successfully");
+            }
+
+            // Close the connection
+            connection.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 
     public void addConsultationWindow(int userID){
         Frame frame = new Frame();
@@ -341,12 +452,10 @@ public class DoctorView extends JFrame {
             public void actionPerformed(ActionEvent e) {
 
                 String PacientIDInput = PatientID.getText();
-                String ServiceInput = AppointmentID.getText();
+                String AppointmentIDInput = AppointmentID.getText();
+                String DiagnosticInput = Diagnostic.getText();
                 String DateTimeInput = DateTime.getText();
-                String StatusInput = Diagnostic.getText();
-                //String NotesInput = Notes.getText();
-
-                //InsertPatient(CNPInput, FirstNameInput, LastNameInput, AddressInput, EmailInput, PhoneInput);
+                addConsultation(Integer.parseInt(PacientIDInput), userID, DiagnosticInput, DateTimeInput, Integer.parseInt(AppointmentIDInput));
             }
         });
         addWindowListener(new WindowAdapter() {
@@ -484,7 +593,7 @@ public class DoctorView extends JFrame {
 
     public DoctorView(int userID, String password) {
         // Create a new frame for the admin view
-        Frame doctorFrame = new Frame("Admin View");
+        Frame doctorFrame = new Frame("Doctor View");
 
         // Set the layout
         doctorFrame.setLayout(new FlowLayout());
@@ -541,6 +650,9 @@ public class DoctorView extends JFrame {
         Button showAppointmentsButton = new Button("Show Appointments");
         showAppointmentsButton.addActionListener(e -> AppointmentsFound(userID));
         doctorFrame.add(showAppointmentsButton);
+        Button showConsultationsButton = new Button("Show Consultations");
+        showConsultationsButton.addActionListener(e -> ConsultationsFound(userID));
+        doctorFrame.add(showConsultationsButton);
 
         Button addAppointmentButton = new Button("Add Appointment");
         addAppointmentButton.addActionListener(e -> addAppointmentWindow(userID));
