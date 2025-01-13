@@ -9,10 +9,11 @@ import java.lang.System;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+
 public class DatabaseConnector extends Frame {
     private static String url = "jdbc:mysql://localhost:3306/projectpoliclinic?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
     private static String uid = "root";
-    private static String pw = "root";
+    private static String pw = "AdelinMihai06*";
     private BufferedReader reader;
     private Connection con;
 
@@ -380,6 +381,9 @@ public class DatabaseConnector extends Frame {
                 }
                 else if (authentified.equals("2")) {
                     EconomicView E = new EconomicView(ID);
+                }
+                else if(authentified.equals("3")){
+                    MedicalAssistantView E = new MedicalAssistantView(ID);
                 }
                 else System.out.println("error authentifying user");
             }
