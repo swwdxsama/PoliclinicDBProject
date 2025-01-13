@@ -417,6 +417,7 @@ public class DoctorView extends JFrame {
                 String StatusInput = Status.getText();
                 String NotesInput = Notes.getText();
 
+                addAppointmentQuery(userID, PacientIDInput, ServiceInput, DateTimeInput, StatusInput, NotesInput);
                 //InsertPatient(CNPInput, FirstNameInput, LastNameInput, AddressInput, EmailInput, PhoneInput);
             }
         });
